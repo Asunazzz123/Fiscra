@@ -1,14 +1,12 @@
-# Run Locally
+# Fiscra 
+Fiscra 是一个记账小程序，基于React与Python开发
+目前还是demo版本~
 
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `make setup`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `make run`
-4. Kill corresponding service
-   `make kill` to kill frontend and backend service
-   `make kill SERVICE=frontend ` to kill frontend service
-   `make kill SERVICE=backend` to kill backend service
+[中文](README_ZH.md) | [English](README_EN.md)
+## 部署说明
+请先预先安装 Node.js
+运行 `make setup` 进行前端与后端的依赖的安装
+运行 `make run` 一键部署前端与后端
+运行 `make kill SERVICE=frontend` 杀死前端服务
+运行 `make kill SERVICE=backend` 杀死前端服务
+运行 `make kill` 同时杀死前后端的服务
