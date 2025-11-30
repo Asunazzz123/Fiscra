@@ -6,7 +6,7 @@ Now it is a demo version
 
 
 
-[中文](README_ZH.md) | [English](README_EN.md)
+[中文](README.md) | [English](README_EN.md)
 ## Run Locally
 
 **Prerequisites:**  Node.js

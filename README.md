@@ -2,7 +2,7 @@
 Fiscra 是一个记账小程序，基于React与Python开发
 目前还是demo版本~
 
-[中文](README_ZH.md) | [English](README_EN.md)
+[中文](README.md) | [English](README_EN.md)
 ## 部署说明
 请先预先安装 Node.js
 运行 `make setup` 进行前端与后端的依赖的安装
