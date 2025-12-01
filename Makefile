@@ -4,8 +4,8 @@ LOG_DIR := .log
 BACKEND_LOG := $(LOG_DIR)/backend.log
 SERVICE ?= None
 
-import mk/sys.mk
-import mk/kill.mk
+include mk/sys.mk
+include mk/kill.mk
 
 setup:
 	npm install
@@ -14,18 +14,19 @@ setup:
 	$(PIP_BIN) install -r requirements.txt
 	mkdir -p $(LOG_DIR)
 
-ifeq ($(SERVICE),None)
 
+
+ifeq ($(SYS),Win)
 run:
-	ifeq ($(SYS),Win)
-		# Windows PowerShell
-		powershell -Command "Start-Process '$(PY_BIN)' -ArgumentList './src/app.py' -RedirectStandardOutput '$(BACKEND_LOG)' -RedirectStandardError '$(BACKEND_LOG)'"
-		npm run dev
-	else
-		# Unix/Linux/macOS
-		$(PY_BIN) ./src/app.py > $(BACKEND_LOG) 2>&1 &
-		npm run dev
-	endif
+	# Windows PowerShell
+	powershell -Command "cmd /c \"$(PY_BIN) ./src/app.py > $(BACKEND_LOG) 2>&1\""
+	npm run dev
+else
+run:
+	# Unix/Linux/macOS
+	$(PY_BIN) ./src/app.py > $(BACKEND_LOG) 2>&1 &
+	npm run dev
+endif
 
 
 
