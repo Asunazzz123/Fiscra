@@ -3,7 +3,10 @@ import time
 import threading
 from contextlib import contextmanager
 from pathlib import Path
-from dev import system_
+try:
+    from dev import system_
+except:
+    from .dev import system_
 if system_() == 'Windows':
     import msvcrt
 elif system_() in ('Linux', 'Darwin'):

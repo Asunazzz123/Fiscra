@@ -2,7 +2,10 @@ import csv
 import os
 from typing import List, Dict, Any
 from pathlib import Path
-from .lock import FileLock
+try:
+    from lock import FileLock
+except:
+    from .lock import FileLock
 
 class Storage:
     """
