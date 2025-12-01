@@ -9,7 +9,7 @@ Now it is a demo version
 [中文](README.md) | [English](README_EN.md)
 ## Run Locally
 
-**Prerequisites:**  Node.js
+**Prerequisites:**  Node.js, Python
 
 
 1. Install dependencies:
