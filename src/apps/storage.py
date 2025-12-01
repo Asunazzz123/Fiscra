@@ -69,6 +69,8 @@ class Storage:
             with open(self.path, "r", encoding="utf-8") as f:
                 reader = csv.reader(f)
                 rows = list(reader)
+            
+            # rows[0] is header, subsequent rows contain data.
             if len(rows) <= 1:
                 return 0
 
