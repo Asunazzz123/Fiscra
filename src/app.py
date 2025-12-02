@@ -6,14 +6,15 @@ from apps.budget import Budget
 from apps.utils import current_month
 app = Flask(__name__)
 CORS(app)
-app.config["PROPAGATE_EXCEPTIONS"] = True
-app.config["DEBUG"] = True
+
 
 storage = Storage("data.csv")
 budget = Budget("budget.json")
 mode = "run"
 def switch_mode(mode = "run"):
     if mode == "test":
+        app.config["PROPAGATE_EXCEPTIONS"] = True
+        app.config["DEBUG"] = True
         return 0
     elif mode == "run":
         return 1
@@ -85,20 +86,34 @@ def delete_data():
         return jsonify({"status": "error", "message": str(e)}), 400
 @app.route("/api/budget", methods=["PUT"])
 def set_budget():
-    data = request.get_json()
-    budget_item = dataBudget(**data)
-    budget.write_budget(budget_item.year, budget_item.month, budget_item.monthlyLimit)
-    return jsonify({"status": "ok", "data": budget_item.model_dump()})
+    try:
+        data = request.get_json()
+        budget_item = dataBudget(**data)
+        budget.write_budget(budget_item.year, budget_item.month, budget_item.monthlyLimit)
+        return jsonify({"status": "ok", "data": budget_item.model_dump()})
+    except Exception as e:
+        if switch_mode(mode) == 0:
+            print("ERROR in /api/budget PUT:", e)
+            raise
+        else:
+            return jsonify({"status": "error", "message": str(e)}), 400
 @app.route("/api/budget", methods=["GET"])
 def read_budget():
-    year, month = current_month()
-    monthly_limit = budget.read_budget(year, month)
-    result = {
-        "year": year,
-        "month": month,
-        "monthlyLimit": monthly_limit if monthly_limit is not None else 0,
-        "enabled": True
-    }
-    return jsonify({"status": "ok", "data": result})
+    try:
+        year, month = current_month()
+        monthly_limit = budget.read_budget(year, month)
+        result = {
+            "year": year,
+            "month": month,
+            "monthlyLimit": monthly_limit if monthly_limit is not None else 0,
+            "enabled": True
+        }
+        return jsonify({"status": "ok", "data": result})
+    except Exception as e:
+        if switch_mode(mode) == 0:
+            print("ERROR in /api/budget GET:", e)
+            raise
+        else:
+            return jsonify({"status": "error", "message": str(e)}), 400
 if __name__ == "__main__":
     app.run(host="localhost", port=5000)
