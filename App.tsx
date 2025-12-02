@@ -5,12 +5,14 @@ import { Ledger } from './components/Ledger';
 import { EntryForm } from './components/EntryForm';
 import { Transaction, BudgetSettings, AppView } from './types';
 import { analyzeSpending } from './services/geminiService';
-import { fetchAllData, addData, deleteData, setBudget, readBudget } from './api';
+import { fetchAllData, addData, deleteData,  saveBudget, readBudget } from './api';
 
 const App: React.FC = () => {
   const [view, setView] = useState<AppView>(AppView.DASHBOARD);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [budget, setBudget] = useState<BudgetSettings>({ monthlyLimit: 1000, enabled: true });
+  const [budget, setBudgetState] = useState<BudgetSettings>({ year: 2025, month: 12, monthlyLimit: 1000, enabled: true });
+  const [isBudgetHydrated, setBudgetHydrated] = useState(false);
+  const [hasHydratedBudget, setHasHydratedBudget] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -40,9 +42,36 @@ const App: React.FC = () => {
     // 初次加载数据
     refreshData();
 
-    // 从本地存储加载预算设置
-    const savedBudget = localStorage.getItem("brightledger_budget");
-    if (savedBudget) setBudget(JSON.parse(savedBudget));
+    const hydrateBudget = async () => {
+      let hydrated = false;
+
+      try {
+        const response = await readBudget();
+        if (response?.status === "ok" && response.data) {
+          setBudgetState(response.data as BudgetSettings);
+          localStorage.setItem("brightledger_budget", JSON.stringify(response.data));
+          hydrated = true;
+        }
+      } catch (error) {
+        console.error("Failed to load budget from API:", error);
+      }
+
+      if (!hydrated) {
+        try {
+          const savedBudget = localStorage.getItem("brightledger_budget");
+          if (savedBudget) {
+            setBudgetState(JSON.parse(savedBudget));
+            hydrated = true;
+          }
+        } catch (error) {
+          console.error("Failed to parse budget from local storage:", error);
+        }
+      }
+
+      setBudgetHydrated(true);
+    };
+
+    hydrateBudget();
 
     // 设置定时器轮询一次数据
     const intervalId = setInterval(() => {
@@ -55,8 +84,25 @@ const App: React.FC = () => {
 
   // budget 改变时保存到 localStorage
   useEffect(() => {
+    if (!isBudgetHydrated) return;
+
     localStorage.setItem("brightledger_budget", JSON.stringify(budget));
-  }, [budget]);
+
+    if (!hasHydratedBudget) {
+      setHasHydratedBudget(true);
+      return;
+    }
+
+    const persistBudget = async () => {
+      try {
+        await saveBudget(budget);
+      } catch (error) {
+        console.error("Failed to persist budget settings:", error);
+      }
+    };
+
+    persistBudget();
+  }, [budget, hasHydratedBudget, isBudgetHydrated]);
 
   // 添加交易（新增或编辑）
   const handleAddTransaction = async (data: Omit<Transaction, "id">) => {
@@ -236,7 +282,7 @@ const App: React.FC = () => {
                   <input 
                     type="checkbox"
                     checked={budget.enabled}
-                    onChange={(e) => setBudget({ ...budget, enabled: e.target.checked })}
+                    onChange={(e) => setBudgetState({ ...budget, enabled: e.target.checked })}
                     className="sr-only peer"
                   />
                   <div className="w-11 h-6 bg-slate-200 rounded-full peer-checked:bg-blue-600">
@@ -244,7 +290,31 @@ const App: React.FC = () => {
                   </div>
                 </label>
               </div>
-
+              <div className={`bg-gray-100 p-6 rounded-2xl mb-6 ${budget.enabled ? '' : 'opacity-50 pointer-events-none'}`}>
+                <label className="block text-sm font-medium text-slate-600 mb-2">
+                  Year and Month
+                </label>
+                <input
+                  type="number"
+                  value={budget.year}
+                  onChange={(e) => setBudgetState({ ...budget, year: parseInt(e.target.value) || 2025 })}
+                  className="w-[40%] mr-4 px-4 py-2 border border-slate-200 rounded-lg"
+                ></input>
+                <select
+                  value={budget.month}
+                  onChange={(e) => setBudgetState({ ...budget, month: Number(e.target.value) })}
+                  className="w-[40%] px-4 py-2 border border-slate-200 rounded-lg"
+                >
+                  {[...Array(12)].map((_, index) => {
+                    const month = index + 1;
+                    return (
+                      <option key={month} value={month}>
+                        {month}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
               <div className={`${budget.enabled ? "" : "opacity-50 pointer-events-none"}`}>
                 <label className="block text-sm font-medium text-slate-600 mb-2">
                   Monthly Limit ($)
@@ -252,7 +322,7 @@ const App: React.FC = () => {
                 <input
                   type="number"
                   value={budget.monthlyLimit}
-                  onChange={(e) => setBudget({ ...budget, monthlyLimit: parseFloat(e.target.value) || 0 })}
+                  onChange={(e) => setBudgetState({ ...budget, monthlyLimit: parseFloat(e.target.value) || 0 })}
                   className="w-full px-4 py-2 border border-slate-200 rounded-lg"
                 />
               </div>

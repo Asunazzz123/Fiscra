@@ -4,9 +4,9 @@ import threading
 from contextlib import contextmanager
 from pathlib import Path
 try:
-    from dev import system_
+    from utils import system_
 except:
-    from .dev import system_
+    from .utils import system_
 if system_() == 'Windows':
     import msvcrt
 elif system_() in ('Linux', 'Darwin'):

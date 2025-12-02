@@ -36,7 +36,7 @@ export const deleteData = async (id: string) => {
 };
 
 /** 设置预算 */
-export const setBudget = async (budget: { monthlyLimit: number; enabled: boolean }) => {
+export const saveBudget = async (budget: { year : number ,month: number; monthlyLimit: number; enabled: boolean }) => {
   const res = await fetch(`${BASE_URL}/budget`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },

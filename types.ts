@@ -11,6 +11,8 @@ export interface Transaction {
 }
 
 export interface BudgetSettings {
+  year: number;
+  month: number;
   monthlyLimit: number;
   enabled: boolean;
 }

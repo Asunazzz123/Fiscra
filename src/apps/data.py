@@ -18,3 +18,17 @@ class dataItem(BaseModel):
     remark : str
     category : str
 
+
+class dataBudget(BaseModel):
+    """
+    预算数据项
+    
+    :param year: 年份
+    :param month: 月份
+    :param monthlyLimit: 月预算金额
+    :param enabled: 是否启用
+    """
+    year: int
+    month: int
+    monthlyLimit: float
+    enabled: bool = True
