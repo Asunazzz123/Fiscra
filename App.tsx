@@ -5,9 +5,7 @@ import { Ledger } from './components/Ledger';
 import { EntryForm } from './components/EntryForm';
 import { Transaction, BudgetSettings, AppView } from './types';
 import { analyzeSpending } from './services/geminiService';
-
-
-import { fetchAllData, addData, deleteData } from './api';
+import { fetchAllData, addData, deleteData, setBudget, readBudget } from './api';
 
 const App: React.FC = () => {
   const [view, setView] = useState<AppView>(AppView.DASHBOARD);

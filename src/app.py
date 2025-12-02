@@ -81,7 +81,9 @@ def delete_data():
             print("ERROR in /api/data DELETE:", e)
             raise
         return jsonify({"status": "error", "message": str(e)}), 400
-
+# @app.route("/api/budget", methods=["PUT"])
+# def set_budget():
+    
 
 if __name__ == "__main__":
     app.run(host="localhost", port=5000)

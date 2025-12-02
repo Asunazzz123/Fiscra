@@ -34,3 +34,19 @@ export const deleteData = async (id: string) => {
   });
   return res.json();
 };
+
+/** 设置预算 */
+export const setBudget = async (budget: { monthlyLimit: number; enabled: boolean }) => {
+  const res = await fetch(`${BASE_URL}/budget`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(budget),
+  });
+  return res.json();
+};
+
+/** 读取预算 */
+export const readBudget = async () => {
+  const res = await fetch(`${BASE_URL}/budget`);
+  return res.json();
+};
