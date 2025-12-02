@@ -14,7 +14,7 @@ Now it is a demo version
 
 1. Install dependencies:
    `make setup`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+2. Create a `.env.local` file and Set the `GEMINI_API_KEY` in order to use AI service
 3. Run the app:
    `make run`
 4. Kill corresponding service
