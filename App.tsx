@@ -6,7 +6,7 @@ import { EntryForm } from './components/EntryForm';
 import { Transaction, BudgetSettings, AppView } from './types';
 import { analyzeSpending } from './services/geminiService';
 
-// 🔥 使用你写的 API（你需要有 api.ts）
+
 import { fetchAllData, addData, deleteData } from './api';
 
 const App: React.FC = () => {
@@ -19,9 +19,9 @@ const App: React.FC = () => {
   // AI
   const [aiAnalysis, setAiAnalysis] = useState<string>('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false); // 进阶：用于刷新状态指示
+  const [isRefreshing, setIsRefreshing] = useState(false); // 用于刷新状态指示
 
-  // 🟦 1. 提取数据获取函数（基础更改）
+  // 提取数据获取函数
   const refreshData = useCallback(async () => {
     setIsRefreshing(true);
     try {
@@ -37,7 +37,7 @@ const App: React.FC = () => {
     }
   }, []);
 
-  // 🟩 2. 初次加载 & 定时轮询（基础更改）
+  //  初次加载 & 定时轮询
   useEffect(() => {
     // 初次加载数据
     refreshData();
@@ -46,7 +46,7 @@ const App: React.FC = () => {
     const savedBudget = localStorage.getItem("brightledger_budget");
     if (savedBudget) setBudget(JSON.parse(savedBudget));
 
-    // 设置定时器，每 5 秒轮询一次数据
+    // 设置定时器轮询一次数据
     const intervalId = setInterval(() => {
         refreshData();
     }, 1000*60*3); // 3 minutes
@@ -55,12 +55,12 @@ const App: React.FC = () => {
     return () => clearInterval(intervalId);
   }, [refreshData]);
 
-  // 3. budget 改变时保存到 localStorage
+  // budget 改变时保存到 localStorage
   useEffect(() => {
     localStorage.setItem("brightledger_budget", JSON.stringify(budget));
   }, [budget]);
 
-  // 4. 添加交易（新增或编辑）
+  // 添加交易（新增或编辑）
   const handleAddTransaction = async (data: Omit<Transaction, "id">) => {
     if (editingId) {
       // 前端编辑（CSV 无编辑接口，只能删除后添加）
@@ -75,7 +75,7 @@ const App: React.FC = () => {
     refreshData(); 
   };
 
-  // 5. 删除交易
+  // 删除交易
   const handleDeleteTransaction = async (id: string) => {
     if (!confirm("Are you sure you want to delete this item?")) return;
 
@@ -85,19 +85,19 @@ const App: React.FC = () => {
     refreshData();
   };
 
-  // 6. 编辑
+  // 编辑
   const startEdit = (t: Transaction) => {
     setEditingId(t.id);
     setIsFormOpen(true);
   };
 
-  // 7. 导入数据（前端功能不变）
+  // 导入数据
   const importData = (data: Transaction[]) => {
     setTransactions(prev => [...data, ...prev]);
     alert(`Successfully imported ${data.length} transactions.`);
   };
 
-  // 8. AI 分析
+  // AI 分析
   const triggerAIAnalysis = async () => {
     setIsAnalyzing(true);
     setAiAnalysis('');
@@ -107,7 +107,7 @@ const App: React.FC = () => {
     setIsAnalyzing(false);
   };
 
-  // ---------------- UI 不变 ------------------
+
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-slate-50 text-slate-800 font-sans">
@@ -191,7 +191,7 @@ const App: React.FC = () => {
       {/* Main */}
       <main className="flex-1 overflow-y-auto h-screen p-4 md:p-8">
         <div className="max-w-5xl mx-auto">
-          {/* Header (进阶：添加刷新按钮) */}
+          {/* Header */}
           <header className="mb-8 flex justify-between items-center">
             <h1 className="text-2xl md:text-3xl font-bold text-slate-800">
               {view === AppView.DASHBOARD && 'Financial Overview'}
@@ -231,7 +231,7 @@ const App: React.FC = () => {
 
           {view === AppView.SETTINGS && (
             <div className="bg-white p-8 rounded-xl shadow-sm border border-slate-100 max-w-lg">
-              {/* Budget UI 不变 */}
+              {/* Budget UI  */}
               <div className="flex items-center justify-between mb-6">
                 <span className="text-lg font-medium text-slate-700">Enable Monthly Budget</span>
                 <label className="relative inline-flex items-center cursor-pointer">
@@ -263,7 +263,7 @@ const App: React.FC = () => {
 
           {view === AppView.AI_INSIGHTS && (
             <div className="bg-white p-8 rounded-xl shadow-sm border border-slate-100">
-              {/* AI 面板完全保留 */}
+              
               <button 
                 onClick={triggerAIAnalysis}
                 disabled={isAnalyzing}
