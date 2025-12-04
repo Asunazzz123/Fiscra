@@ -10,7 +10,12 @@ import { fetchAllData, addData, deleteData,  saveBudget, readBudget } from './ap
 const App: React.FC = () => {
   const [view, setView] = useState<AppView>(AppView.DASHBOARD);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [budget, setBudgetState] = useState<BudgetSettings>({ year: 2025, month: 12, monthlyLimit: 1000, enabled: true });
+  const [budget, setBudgetState] = useState<BudgetSettings>({ 
+    year: new Date().getFullYear(), 
+    month: new Date().getMonth() + 1, 
+    monthlyLimit: 2000, 
+    enabled: true 
+  });
   const [isBudgetHydrated, setBudgetHydrated] = useState(false);
   const [hasHydratedBudget, setHasHydratedBudget] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -297,7 +302,7 @@ const App: React.FC = () => {
                 <input
                   type="number"
                   value={budget.year}
-                  onChange={(e) => setBudgetState({ ...budget, year: parseInt(e.target.value) || 2025 })}
+                  onChange={(e) => setBudgetState({ ...budget, year: parseInt(e.target.value) || new Date().getFullYear() })}
                   className="w-[40%] mr-4 px-4 py-2 border border-slate-200 rounded-lg"
                 ></input>
                 <select
