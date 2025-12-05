@@ -38,7 +38,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ transactions, budget }) =>
       const dailyExpense = stats.currentMonthTx
         .filter(t => t.date === dateStr && t.type === 'expense')
         .reduce((sum, t) => sum + t.amount, 0);
-      return { day: `Day ${day}`, amount: dailyExpense };
+      return { day: `Day ${day}`, amount: Number(dailyExpense.toFixed(2)) };
     });
 
     // Category Pie Chart
@@ -50,7 +50,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ transactions, budget }) =>
         categoryMap.set(t.category, current + t.amount);
       });
     
-    const categoryData = Array.from(categoryMap.entries()).map(([name, value]) => ({ name, value }));
+    const categoryData = Array.from(categoryMap.entries()).map(([name, value]) => ({ name, value: Number(value.toFixed(2)) }));
 
     return { dailyData, categoryData };
   }, [stats, currentMonthStr, currentDate]);
