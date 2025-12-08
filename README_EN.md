@@ -1,5 +1,5 @@
 # Fiscra
-Fiscra is a account app based on React and python.
+Fiscra is a account app based on TypeScript and python.
 Now it is a demo version 
 
 

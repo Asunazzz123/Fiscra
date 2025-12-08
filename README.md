@@ -1,5 +1,5 @@
 # Fiscra 
-Fiscra 是一个记账小程序，基于React与Python开发
+Fiscra 是一个记账小程序，基于TypeScript与Python开发
 目前还是demo版本~
 
 [中文](README.md) | [English](README_EN.md)
