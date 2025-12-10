@@ -3,7 +3,7 @@ import { LayoutDashboard, List, Settings, Plus, Sparkles, RefreshCw } from 'luci
 import { Dashboard } from './components/Dashboard';
 import { Ledger } from './components/Ledger';
 import { EntryForm } from './components/EntryForm';
-import { Transaction, BudgetSettings, AppView } from './types';
+import { Transaction, BudgetSettings, AppView, isValidYear } from './types';
 import { analyzeSpending } from './services/geminiService';
 import { fetchAllData, addData, deleteData,  saveBudget, readBudget } from './api';
 
@@ -87,7 +87,7 @@ const App: React.FC = () => {
     return () => clearInterval(intervalId);
   }, [refreshData]);
 
-  // budget 改变时保存到 localStorage
+  // budget 改变时保存到后端
   useEffect(() => {
     if (!isBudgetHydrated) return;
 
@@ -97,16 +97,20 @@ const App: React.FC = () => {
       setHasHydratedBudget(true);
       return;
     }
-
-    const persistBudget = async () => {
+    // 校验年份必须是四位数，否则不触发后端保存
+    if (!isValidYear(budget.year)) {
+      return;
+    }
+    // 用户停止输入 500ms 后才保存到后端
+    const timeoutId = setTimeout(async () => {
       try {
         await saveBudget(budget);
       } catch (error) {
         console.error("Failed to persist budget settings:", error);
       }
-    };
+    }, 500);
 
-    persistBudget();
+    return () => clearTimeout(timeoutId);
   }, [budget, hasHydratedBudget, isBudgetHydrated]);
 
   // 添加交易（新增或编辑）

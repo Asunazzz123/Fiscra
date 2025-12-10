@@ -17,6 +17,10 @@ export interface BudgetSettings {
   enabled: boolean;
 }
 
+export const isValidYear = (year: number): boolean => {
+  return Number.isInteger(year) && year >= 1000 && year <= 9999;
+};
+
 export interface ChartDataPoint {
   name: string;
   value: number;
