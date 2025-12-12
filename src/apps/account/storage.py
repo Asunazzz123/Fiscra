@@ -2,18 +2,23 @@ import csv
 import os
 from typing import List, Dict, Any
 from pathlib import Path
+
 try:
-    from lock import FileLock
+    from apps.utils.config import STORAGE_DIR
+except ImportError:
+    from ..utils.config import STORAGE_DIR
+
+try:
+    from apps.utils.lock import FileLock
 except:
-    from .lock import FileLock
+    from ..utils.lock import FileLock
 
 class Storage:
     """
     负责CSV的 读 / 写 / 删除 / 覆盖
     """
     def __init__(self, filename="data.csv"):
-        base_dir = Path(__file__).resolve().parent.parent.parent  
-        self.path = base_dir / "storage" / filename
+        self.path = STORAGE_DIR / filename
         self.path.parent.mkdir(parents=True, exist_ok=True)
         # 初始化文件锁实例
         lockfile_path = str(self.path) + '.lock'

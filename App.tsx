@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { LayoutDashboard, List, Settings, Plus, Sparkles, RefreshCw } from 'lucide-react';
+import { LayoutDashboard, List, Settings, Plus, Sparkles, RefreshCw, CheckSquare } from 'lucide-react';
 import { Dashboard } from './components/Dashboard';
 import { Ledger } from './components/Ledger';
 import { EntryForm } from './components/EntryForm';
+import { TODO } from './components/TODO';
+import { TodoItem } from './types';
 import { Transaction, BudgetSettings, AppView, isValidYear } from './types';
 import { analyzeSpending } from './services/geminiService';
-import { fetchAllData, addData, deleteData,  saveBudget, readBudget } from './api';
+import { fetchAllData, addData, deleteData, saveBudget, readBudget, fetchTodos, saveTodos } from './api';
 
 const App: React.FC = () => {
   const [view, setView] = useState<AppView>(AppView.DASHBOARD);
@@ -25,6 +27,72 @@ const App: React.FC = () => {
   const [aiAnalysis, setAiAnalysis] = useState<string>('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false); // 用于刷新状态指示
+
+  // TODO List
+  const [todos, setTodos] = useState<TodoItem[]>([]);
+  const [isTodoHydrated, setTodoHydrated] = useState(false);
+
+  // 从后端加载 TODO 数据
+  useEffect(() => {
+    const hydrateTodos = async () => {
+      try {
+        const response = await fetchTodos();
+        if (response?.status === "ok" && response.data) {
+          setTodos(response.data as TodoItem[]);
+        }
+      } catch (error) {
+        console.error("Failed to load todos from API:", error);
+        // 降级到 localStorage
+        const saved = localStorage.getItem('fiscra_todos');
+        if (saved) {
+          setTodos(JSON.parse(saved));
+        }
+      }
+      setTodoHydrated(true);
+    };
+    hydrateTodos();
+  }, []);
+
+  // 保存 todos 到后端
+  useEffect(() => {
+    if (!isTodoHydrated) return;
+    
+    // 同时保存到 localStorage 作为备份
+    localStorage.setItem('fiscra_todos', JSON.stringify(todos));
+    
+    const timeoutId = setTimeout(async () => {
+      try {
+        await saveTodos(todos);
+      } catch (error) {
+        console.error("Failed to save todos:", error);
+      }
+    }, 500);
+    
+    return () => clearTimeout(timeoutId);
+  }, [todos, isTodoHydrated]);
+
+  // TODO 操作函数
+  const handleAddTodo = (todo: Omit<TodoItem, 'id' | 'createdAt'>) => {
+    const newTodo: TodoItem = {
+      ...todo,
+      id: crypto.randomUUID(),
+      createdAt: new Date().toISOString()
+    };
+    setTodos(prev => [newTodo, ...prev]);
+  };
+
+  const handleToggleTodo = (id: string) => {
+    setTodos(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
+  };
+
+  const handleDeleteTodo = (id: string) => {
+    if (!confirm('Are you sure you want to delete this task?')) return;
+    setTodos(prev => prev.filter(t => t.id !== id));
+  };
+
+  const handleUpdateTodo = (id: string, updates: Partial<TodoItem>) => {
+    setTodos(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
+  };
 
   // 提取数据获取函数
   const refreshData = useCallback(async () => {
@@ -166,7 +234,7 @@ const App: React.FC = () => {
     <div className="min-h-screen flex flex-col md:flex-row bg-slate-50 text-slate-800 font-sans">
       {/* Mobile Header */}
       <div className="md:hidden bg-white p-4 border-b border-slate-200 flex justify-between items-center sticky top-0 z-30">
-        <div className="font-bold text-xl text-blue-600 tracking-tight">BrightLedger</div>
+        <div className="font-bold text-xl text-blue-600 tracking-tight">Fiscra</div>
         <button
           onClick={() => { setEditingId(null); setIsFormOpen(true); }}
           className="bg-blue-600 text-white p-2 rounded-full shadow-lg active:scale-95 transition-transform"
@@ -207,16 +275,7 @@ const App: React.FC = () => {
             <span>Transactions</span>
           </button>
 
-          <button 
-            onClick={() => setView(AppView.AI_INSIGHTS)}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${
-              view === AppView.AI_INSIGHTS ? 'bg-purple-50 text-purple-700 font-medium'
-              : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-            }`}
-          >
-            <Sparkles className="w-5 h-5" />
-            <span>AI Advisor</span>
-          </button>
+        
 
           <button 
             onClick={() => setView(AppView.SETTINGS)}
@@ -227,6 +286,30 @@ const App: React.FC = () => {
           >
             <Settings className="w-5 h-5" />
             <span>Budget Settings</span>
+          </button>
+
+  
+
+          <button 
+            onClick={() => setView(AppView.TODO_LIST)}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${
+              view === AppView.TODO_LIST ? 'bg-emerald-50 text-emerald-700 font-medium'
+              : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+            }`}
+          >
+            <CheckSquare className="w-5 h-5" />
+            <span>TODO List</span>
+          </button>
+
+          <button 
+            onClick={() => setView(AppView.AI_INSIGHTS)}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${
+              view === AppView.AI_INSIGHTS ? 'bg-purple-50 text-purple-700 font-medium'
+              : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+            }`}
+          >
+            <Sparkles className="w-5 h-5" />
+            <span>AI Advisor</span>
           </button>
         </nav>
 
@@ -251,6 +334,7 @@ const App: React.FC = () => {
               {view === AppView.LEDGER && 'Transaction History'}
               {view === AppView.SETTINGS && 'Budget Configuration'}
               {view === AppView.AI_INSIGHTS && 'Smart Analysis'}
+              {view === AppView.TODO_LIST && 'Task Manager'}
             </h1>
             
             {(view === AppView.DASHBOARD || view === AppView.LEDGER) && (
@@ -356,6 +440,16 @@ const App: React.FC = () => {
               )}
             </div>
           )}
+
+          {view === AppView.TODO_LIST && (
+            <TODO
+              todos={todos}
+              onAdd={handleAddTodo}
+              onToggle={handleToggleTodo}
+              onDelete={handleDeleteTodo}
+              onUpdate={handleUpdateTodo}
+            />
+          )}
         </div>
       </main>
 
@@ -366,6 +460,9 @@ const App: React.FC = () => {
         </button>
         <button onClick={() => setView(AppView.LEDGER)}>
           <List className={`w-6 h-6 ${view === AppView.LEDGER ? 'text-blue-600' : 'text-slate-400'}`} />
+        </button>
+        <button onClick={() => setView(AppView.TODO_LIST)}>
+          <CheckSquare className={`w-6 h-6 ${view === AppView.TODO_LIST ? 'text-emerald-600' : 'text-slate-400'}`} />
         </button>
         <button onClick={() => setView(AppView.AI_INSIGHTS)}>
           <Sparkles className={`w-6 h-6 ${view === AppView.AI_INSIGHTS ? 'text-purple-600' : 'text-slate-400'}`} />

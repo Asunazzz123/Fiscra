@@ -30,5 +30,17 @@ export enum AppView {
   DASHBOARD = 'DASHBOARD',
   LEDGER = 'LEDGER',
   SETTINGS = 'SETTINGS',
-  AI_INSIGHTS = 'AI_INSIGHTS'
+  AI_INSIGHTS = 'AI_INSIGHTS',
+  TODO_LIST = 'TODO_LIST'
+}
+
+export interface TodoItem {
+  id: string;
+  title: string;
+  description?: string;
+  completed: boolean;
+  priority: 'low' | 'medium' | 'high';
+  dueDate?: string;
+  category: string;
+  createdAt: string;
 }

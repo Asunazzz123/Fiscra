@@ -3,10 +3,14 @@ import os
 from pathlib import Path
 from typing import Optional
 
+try:
+    from apps.utils.config import STORAGE_DIR
+except ImportError:
+    from ..utils.config import STORAGE_DIR
+
 class Budget:
     def __init__(self, pathname: str = "budget.json"):
-        base_dir = Path(__file__).resolve().parent.parent.parent  
-        self.path = base_dir / "storage" / pathname
+        self.path = STORAGE_DIR / pathname
         self.path.parent.mkdir(parents=True, exist_ok=True)
 
     def check_json(fun):

@@ -4,7 +4,7 @@ import threading
 from contextlib import contextmanager
 from pathlib import Path
 try:
-    from utils import system_
+    from apps.utils.utils import system_
 except:
     from .utils import system_
 if system_() == 'Windows':
